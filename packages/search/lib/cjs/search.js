@@ -134,7 +134,6 @@ var unwrap = function (ele) {
     parent.normalize();
 };
 
-window.console.error('Siemanko ziomeczki');
 var sortHighlightPosition = function (a, b) {
     if (a.top < b.top) {
         return -1;
@@ -248,7 +247,6 @@ var Highlights = function (_a) {
                         var normalizedCharSpan = keyword.wholeWords ? charIndexSpan.slice(1, -1) : charIndexSpan;
                         var hightlighPosition = highlight(keywordStr, item.keyword, textLayerEle, spans[normalizedCharSpan[0].spanIndex], normalizedCharSpan, matchIndex);
                         if (hightlighPosition) {
-                            console.log('hightlighPosition = ', hightlighPosition);
                             highlightPos.push(hightlighPosition);
                         }
                     }
