@@ -341,7 +341,7 @@ export const Highlights: React.FC<{
         const jump = store.get('jumpToDestination');
         const currentClassName = 'rpv-search__highlight--current';
         if (jump) {
-            const marginTop = 50;
+            const marginTop = 200;
             jump({
                 pageIndex,
                 bottomOffset: (container.getBoundingClientRect().height - top + marginTop) / renderStatus.scale,
