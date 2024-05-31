@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * A React component to view a PDF document
  *
@@ -8,7 +7,6 @@
  */
 
 'use strict';
-window.console.log('siemka');
 
 if (process.env.NODE_ENV === 'production') {
     module.exports = require('./cjs/highlight.min.js');

@@ -13,6 +13,7 @@ export interface HighlightArea {
     keywordStr: string;
     numPages: number;
     pageIndex: number;
+    matchIndex: number;
     // The position of the highlight element in percentages
     left: number;
     top: number;

@@ -35,6 +35,7 @@ export const HightlightItem: React.FC<{
         <div
             className="rpv-search__highlight"
             data-index={index}
+            data-match-index={area.matchIndex}
             ref={containerRef}
             style={getCssProperties(area)}
             title={area.keywordStr.trim()}

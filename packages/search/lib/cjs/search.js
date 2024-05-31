@@ -85,7 +85,7 @@ var HightlightItem = function (_a) {
             });
         }
     }, []);
-    return (React__namespace.createElement("div", { className: "rpv-search__highlight", "data-index": index, ref: containerRef, style: getCssProperties(area), title: area.keywordStr.trim() }));
+    return (React__namespace.createElement("div", { className: "rpv-search__highlight", "data-index": index, "data-match-index": area.matchIndex, ref: containerRef, style: getCssProperties(area), title: area.keywordStr.trim() }));
 };
 
 var calculateOffset = function (children, parent) {
@@ -153,7 +153,9 @@ var sortHighlightPosition = function (a, b) {
 var Highlights = function (_a) {
     var numPages = _a.numPages, pageIndex = _a.pageIndex, renderHighlights = _a.renderHighlights, store = _a.store, onHighlightKeyword = _a.onHighlightKeyword;
     var containerRef = React__namespace.useRef();
-    var defaultRenderHighlights = React__namespace.useCallback(function (renderProps) { return (React__namespace.createElement(React__namespace.Fragment, null, renderProps.highlightAreas.map(function (area, index) { return (React__namespace.createElement(HightlightItem, { index: index, key: index, area: area, onHighlightKeyword: onHighlightKeyword })); }))); }, []);
+    var defaultRenderHighlights = React__namespace.useCallback(function (renderProps) {
+        return (React__namespace.createElement(React__namespace.Fragment, null, renderProps.highlightAreas.map(function (area, index) { return (React__namespace.createElement(HightlightItem, { index: index, key: index, area: area, onHighlightKeyword: onHighlightKeyword })); })));
+    }, []);
     var renderHighlightElements = renderHighlights || defaultRenderHighlights;
     var _b = React__namespace.useState(store.get('matchPosition')), matchPosition = _b[0], setMatchPosition = _b[1];
     var _c = React__namespace.useState(store.get('keyword') || [EMPTY_KEYWORD_REGEXP]), keywordRegexp = _c[0], setKeywordRegexp = _c[1];
@@ -167,7 +169,7 @@ var Highlights = function (_a) {
     var _e = React__namespace.useState([]), highlightAreas = _e[0], setHighlightAreas = _e[1];
     var defaultTargetPageFilter = function () { return true; };
     var targetPageFilter = React__namespace.useCallback(function () { return store.get('targetPageFilter') || defaultTargetPageFilter; }, [store.get('targetPageFilter')]);
-    var highlight = function (keywordStr, keyword, textLayerEle, span, charIndexSpan) {
+    var highlight = function (keywordStr, keyword, textLayerEle, span, charIndexSpan, matchIndex) {
         var range = document.createRange();
         var firstChild = span.firstChild;
         if (!firstChild || firstChild.nodeType !== Node.TEXT_NODE) {
@@ -203,6 +205,7 @@ var Highlights = function (_a) {
             width: width,
             pageHeight: pageHeight,
             pageWidth: pageWidth,
+            matchIndex: matchIndex,
         };
     };
     var highlightAll = function (textLayerEle) {
@@ -235,7 +238,7 @@ var Highlights = function (_a) {
                 keyword: item.keyword,
                 indexes: charIndexes.slice(item.startIndex, item.endIndex),
             }); })
-                .forEach(function (item) {
+                .forEach(function (item, matchIndex) {
                 var spanIndexes = item.indexes.reduce(function (acc, item) {
                     acc[item.spanIndex] = (acc[item.spanIndex] || []).concat([item]);
                     return acc;
@@ -243,8 +246,9 @@ var Highlights = function (_a) {
                 Object.values(spanIndexes).forEach(function (charIndexSpan) {
                     if (charIndexSpan.length !== 1 || charIndexSpan[0].char.trim() !== '') {
                         var normalizedCharSpan = keyword.wholeWords ? charIndexSpan.slice(1, -1) : charIndexSpan;
-                        var hightlighPosition = highlight(keywordStr, item.keyword, textLayerEle, spans[normalizedCharSpan[0].spanIndex], normalizedCharSpan);
+                        var hightlighPosition = highlight(keywordStr, item.keyword, textLayerEle, spans[normalizedCharSpan[0].spanIndex], normalizedCharSpan, matchIndex);
                         if (hightlighPosition) {
+                            console.log('hightlighPosition = ', hightlighPosition);
                             highlightPos.push(hightlighPosition);
                         }
                     }
@@ -328,24 +332,27 @@ var Highlights = function (_a) {
             renderStatus.status !== core.LayerRenderStatus.DidRender) {
             return;
         }
-        var highlightEle = container.querySelector(".rpv-search__highlight[data-index=\"".concat(matchPosition.matchIndex, "\"]"));
-        if (!highlightEle) {
+        var highlightElements = Array.from(container.querySelectorAll(".rpv-search__highlight[data-match-index=\"".concat(matchPosition.matchIndex, "\"]")));
+        if (!highlightElements.length) {
             return;
         }
-        var _a = calculateOffset(highlightEle, container), left = _a.left, top = _a.top;
+        var firstHighlightElement = highlightElements[0];
+        var _a = calculateOffset(firstHighlightElement, container), left = _a.left, top = _a.top;
         var jump = store.get('jumpToDestination');
+        var currentClassName = 'rpv-search__highlight--current';
         if (jump) {
+            var marginTop = 50;
             jump({
                 pageIndex: pageIndex,
-                bottomOffset: (container.getBoundingClientRect().height - top) / renderStatus.scale,
+                bottomOffset: (container.getBoundingClientRect().height - top + marginTop) / renderStatus.scale,
                 leftOffset: left / renderStatus.scale,
                 scaleTo: renderStatus.scale,
             });
             if (currentMatchRef.current) {
-                currentMatchRef.current.classList.remove('rpv-search__highlight--current');
+                currentMatchRef.current.forEach(function (ele) { return ele.classList.remove(currentClassName); });
             }
-            currentMatchRef.current = highlightEle;
-            highlightEle.classList.add('rpv-search__highlight--current');
+            currentMatchRef.current = highlightElements;
+            highlightElements.forEach(function (element) { return element.classList.add(currentClassName); });
         }
     }, [highlightAreas, matchPosition]);
     React__namespace.useEffect(function () {

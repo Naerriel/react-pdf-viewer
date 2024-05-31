@@ -39,8 +39,6 @@ interface CharIndex {
     spanIndex: number;
 }
 
-window.console.error('Siemanko ziomeczki');
-
 // Sort the highlight elements by their positions
 const sortHighlightPosition = (a: HighlightArea, b: HighlightArea) => {
     // Compare the top values first
@@ -68,16 +66,15 @@ export const Highlights: React.FC<{
     onHighlightKeyword?(props: OnHighlightKeyword): void;
 }> = ({ numPages, pageIndex, renderHighlights, store, onHighlightKeyword }) => {
     const containerRef = React.useRef<HTMLDivElement>();
-    const defaultRenderHighlights = React.useCallback(
-        (renderProps: RenderHighlightsProps) => (
+    const defaultRenderHighlights = React.useCallback((renderProps: RenderHighlightsProps) => {
+        return (
             <>
                 {renderProps.highlightAreas.map((area, index) => (
                     <HightlightItem index={index} key={index} area={area} onHighlightKeyword={onHighlightKeyword} />
                 ))}
             </>
-        ),
-        [],
-    );
+        );
+    }, []);
     const renderHighlightElements = renderHighlights || defaultRenderHighlights;
 
     // The initial matching position is taken from the store
@@ -91,7 +88,7 @@ export const Highlights: React.FC<{
         scale: 1,
         status: LayerRenderStatus.PreRender,
     });
-    const currentMatchRef = React.useRef<HTMLElement | null>(null);
+    const currentMatchRef = React.useRef<HTMLElement[] | null>(null);
     const characterIndexesRef = React.useRef<CharIndex[]>([]);
     const [highlightAreas, setHighlightAreas] = React.useState<HighlightArea[]>([]);
 
@@ -107,6 +104,7 @@ export const Highlights: React.FC<{
         textLayerEle: Element,
         span: HTMLElement,
         charIndexSpan: CharIndex[],
+        matchIndex: number,
     ): HighlightArea | null => {
         const range = document.createRange();
 
@@ -152,6 +150,7 @@ export const Highlights: React.FC<{
             width,
             pageHeight,
             pageWidth,
+            matchIndex,
         };
     };
 
@@ -196,7 +195,7 @@ export const Highlights: React.FC<{
                     keyword: item.keyword,
                     indexes: charIndexes.slice(item.startIndex, item.endIndex),
                 }))
-                .forEach((item) => {
+                .forEach((item, matchIndex) => {
                     // Group by the span index
                     const spanIndexes = item.indexes.reduce(
                         (acc, item) => {
@@ -216,6 +215,7 @@ export const Highlights: React.FC<{
                                 textLayerEle,
                                 spans[normalizedCharSpan[0].spanIndex],
                                 normalizedCharSpan,
+                                matchIndex,
                             );
                             if (hightlighPosition) {
                                 highlightPos.push(hightlighPosition);
@@ -329,27 +329,30 @@ export const Highlights: React.FC<{
             return;
         }
 
-        const highlightEle = container.querySelector(
-            `.rpv-search__highlight[data-index="${matchPosition.matchIndex}"]`,
+        const highlightElements = Array.from(
+            container.querySelectorAll(`.rpv-search__highlight[data-match-index="${matchPosition.matchIndex}"]`),
         );
-        if (!highlightEle) {
+        if (!highlightElements.length) {
             return;
         }
+        const firstHighlightElement = highlightElements[0];
 
-        const { left, top } = calculateOffset(highlightEle as HTMLElement, container);
+        const { left, top } = calculateOffset(firstHighlightElement as HTMLElement, container);
         const jump = store.get('jumpToDestination');
+        const currentClassName = 'rpv-search__highlight--current';
         if (jump) {
+            const marginTop = 50;
             jump({
                 pageIndex,
-                bottomOffset: (container.getBoundingClientRect().height - top) / renderStatus.scale,
+                bottomOffset: (container.getBoundingClientRect().height - top + marginTop) / renderStatus.scale,
                 leftOffset: left / renderStatus.scale,
                 scaleTo: renderStatus.scale,
             });
             if (currentMatchRef.current) {
-                currentMatchRef.current.classList.remove('rpv-search__highlight--current');
+                currentMatchRef.current.forEach((ele) => ele.classList.remove(currentClassName));
             }
-            currentMatchRef.current = highlightEle as HTMLElement;
-            highlightEle.classList.add('rpv-search__highlight--current');
+            currentMatchRef.current = highlightElements as HTMLElement[];
+            highlightElements.forEach((element) => element.classList.add(currentClassName));
         }
     }, [highlightAreas, matchPosition]);
 

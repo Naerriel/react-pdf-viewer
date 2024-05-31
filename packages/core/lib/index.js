@@ -8,8 +8,6 @@
 
 'use strict';
 
-console.log('here i am :)');
-
 if (process.env.NODE_ENV === 'production') {
     module.exports = require('./cjs/core.min.js');
 } else {
