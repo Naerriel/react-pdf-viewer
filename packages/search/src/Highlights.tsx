@@ -39,6 +39,8 @@ interface CharIndex {
     spanIndex: number;
 }
 
+window.console.error('Siemanko ziomeczki');
+
 // Sort the highlight elements by their positions
 const sortHighlightPosition = (a: HighlightArea, b: HighlightArea) => {
     // Compare the top values first
