@@ -731,9 +731,12 @@ var highlightPlugin = function (props) {
         React__namespace.createElement(ClickDrag, { canvasLayerRef: renderPageProps.canvasLayerRef, canvasLayerRendered: renderPageProps.canvasLayerRendered, pageIndex: renderPageProps.pageIndex, store: store, textLayerRef: renderPageProps.textLayerRef, textLayerRendered: renderPageProps.textLayerRendered }),
         React__namespace.createElement(HighlightAreaList, { pageIndex: renderPageProps.pageIndex, renderHighlightContent: highlightPluginProps.renderHighlightContent, renderHighlightTarget: highlightPluginProps.renderHighlightTarget, renderHighlights: highlightPluginProps.renderHighlights, store: store }))); };
     var jumpToHighlightArea = function (area) {
+        var marginTop = 200;
         var jumpToDestination = store.get('jumpToDestination');
         if (jumpToDestination) {
-            var bottomOffset = function (_, viewportHeight) { return ((100 - area.top) * viewportHeight) / 100; };
+            var bottomOffset = function (_, viewportHeight) {
+                return ((100 - area.top) * viewportHeight) / 100 + marginTop;
+            };
             var leftOffset = function (viewportWidth, _) { return ((100 - area.left) * viewportWidth) / 100; };
             jumpToDestination({
                 pageIndex: area.pageIndex,

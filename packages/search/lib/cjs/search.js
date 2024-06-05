@@ -339,7 +339,7 @@ var Highlights = function (_a) {
         var jump = store.get('jumpToDestination');
         var currentClassName = 'rpv-search__highlight--current';
         if (jump) {
-            var marginTop = 50;
+            var marginTop = 200;
             jump({
                 pageIndex: pageIndex,
                 bottomOffset: (container.getBoundingClientRect().height - top + marginTop) / renderStatus.scale,
